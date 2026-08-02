@@ -1,24 +1,26 @@
-/**
- * Drizzle schema. Lands in M3, when there is something to persist.
- *
- * M1 has no database on purpose: nothing is processed, so there are no jobs,
- * no accounts and no usage to record. Adding Drizzle and a migration runner
- * now would mean a Postgres dependency on every developer machine and in CI to
- * support zero rows.
- *
- * The tables, from §6:
- *
- *   users          plan, plan_expires_at
- *   jobs           tool_slug, execution_mode, status, input/output bytes and
- *                  keys, params, error, progress, expires_at
- *   projects       timeline jsonb, for the multi-track editor
- *   usage          user_id or anon_fingerprint, drives quotas
- *   subscriptions  provider, provider_ref, status, current_period_end
- *
- * One thing worth writing down before it is built: client-side jobs still get
- * a `jobs` row, with `input_key` null, because nothing was uploaded. That is
- * what keeps quota and analytics uniform across both execution paths instead
- * of the client path being invisible.
- */
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { schema } from './schema';
 
-export const M3_PLACEHOLDER = true;
+export * from './schema';
+
+export type Database = ReturnType<typeof createDatabase>;
+
+/**
+ * The production connection.
+ *
+ * Pool size is deliberately small: the web app runs serverless, so every
+ * instance holds its own pool, and a generous number per instance is how a
+ * managed Postgres runs out of connections under load rather than under
+ * traffic. The worker opens its own with a larger pool.
+ */
+export function createDatabase(connectionString: string, options: { max?: number } = {}) {
+  const client = postgres(connectionString, {
+    max: options.max ?? 5,
+    // Job rows are small and the queries are simple; a long statement here
+    // means something is wrong, not something is busy.
+    idle_timeout: 20,
+    connect_timeout: 10,
+  });
+  return drizzle(client, { schema });
+}
