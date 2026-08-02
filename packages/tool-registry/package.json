@@ -1,0 +1,28 @@
+{
+  "name": "@editz/tool-registry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./slugs": "./src/slugs.ts",
+    "./types": "./src/types.ts",
+    "./tools/*": "./src/tools/*/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "copy:audit": "vitest run src/__tests__/copy-audit.test.ts --disableConsoleIntercept"
+  },
+  "dependencies": {
+    "@editz/engine-core": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@editz/config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

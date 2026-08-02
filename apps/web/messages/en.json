@@ -1,0 +1,135 @@
+{
+  "site": {
+    "name": "Editz",
+    "tagline": "Edit video, audio and images in your browser."
+  },
+  "nav": {
+    "tools": "Tools",
+    "editor": "Editor",
+    "pricing": "Pricing",
+    "skipToContent": "Skip to content"
+  },
+  "home": {
+    "title": "Edit media without uploading it",
+    "subtitle": "Thirty-odd tools for video, audio and images. Most of them run on your device, so your files stay with you and the work costs you nothing in data.",
+    "browseTools": "Browse the tools",
+    "openEditor": "Open the editor",
+    "pitchTitle": "Built for expensive data",
+    "pitchBody": "Every other site uploads your file before it will even show you a preview. Editz does the work on your device wherever it possibly can, and when it cannot, it tells you how many megabytes that will cost before you commit."
+  },
+  "tools": {
+    "indexTitle": "All tools",
+    "indexDescription": "Every Editz tool. Most run entirely in your browser.",
+    "count": "{count, plural, one {# tool} other {# tools}}",
+    "runsLocally": "On your device",
+    "runsOnServer": "On our servers",
+    "pro": "Pro"
+  },
+  "categories": {
+    "edit": "Edit video",
+    "create": "Create",
+    "audio": "Audio",
+    "image": "Images",
+    "convert": "Convert",
+    "ai": "Subtitles and translation",
+    "record": "Record"
+  },
+  "tool": {
+    "dropPrompt": "Drop a file here",
+    "dropPromptMulti": "Drop your files here",
+    "orChoose": "or choose one",
+    "orChooseMulti": "or choose them",
+    "chooseFile": "Choose file",
+    "chooseFiles": "Choose files",
+    "changeFile": "Change file",
+    "settings": "Settings",
+    "howTo": "How to {name}",
+    "faqTitle": "Questions",
+    "relatedTitle": "Related tools",
+    "openApp": "Open {name}",
+    "notYetAvailable": "Processing arrives in the next release",
+    "notYetAvailableBody": "The tool pages, settings and the data meter are live. The engine that does the work lands next.",
+    "retention": "Nothing is kept longer than 24 hours, and files processed on your device are never uploaded at all.",
+    "wrongType": "That file type is not supported here. This tool takes {types}."
+  },
+  "meter": {
+    "title": "Data meter",
+    "onDevice": "On your device",
+    "uploading": "Uploading",
+    "uploadedNothing": "0 MB uploaded",
+    "willUpload": "{size} will be uploaded",
+    "inputLabel": "Input",
+    "outputLabel": "Estimated output",
+    "uploadLabel": "Upload cost",
+    "whereLabel": "Runs",
+    "noFile": "Choose a file and this will tell you exactly where the work happens and what it costs you.",
+    "unknown": "—",
+    "reason": {
+      "client-capable": "This runs in your browser. Your file is not uploaded.",
+      "tool-is-client-only": "This runs in your browser. Nothing is ever uploaded.",
+      "file-too-large": "This file is too large to process in the browser, so it goes to our servers.",
+      "low-device-memory": "This device does not have enough memory for a file this size, so it goes to our servers.",
+      "tool-is-server-only": "This tool runs on our servers — the model it needs is far too large for a browser.",
+      "params-need-server": "These settings are too heavy for the browser, so this one goes to our servers.",
+      "no-cross-origin-isolation": "Your browser cannot run this locally, so it goes to our servers."
+    },
+    "workLabel": "Work",
+    "work": {
+      "reencode": "Full re-encode",
+      "remux": "Repackage only"
+    },
+    "note": {
+      "cut-is-keyframe-aligned": "This cut copies the video untouched, so it lands on the nearest keyframe — up to a couple of seconds before the point you chose. Switch to an exact cut if the precise frame matters.",
+      "container-forces-video-reencode": "The .{container} format can't carry this video track as it is, so the picture has to be re-encoded. That takes much longer than a straight format change.",
+      "container-forces-audio-reencode": "The .{container} format can't carry this audio track as it is, so the sound has to be re-encoded.",
+      "codec-not-valid-in-container": "{codec} isn't valid inside .{container}, so {using} is being used instead.",
+      "filter-forces-reencode": "The changes you picked mean the picture has to be re-encoded rather than copied across.",
+      "dimensions-rounded-to-even": "This video has an odd width or height. It will be trimmed by one pixel, which the encoder requires.",
+      "crop-clamped-to-frame": "The crop box reached past the edge of the picture, so it has been pulled back to fit.",
+      "buffers-whole-file": "This one holds the whole file in memory at once, so it needs more room than usual and long files go to our servers."
+    },
+    "error": {
+      "range-invalid": "That range doesn't look right. Check the start and end times.",
+      "range-empty": "The selected range is empty. Move the start and end apart to choose a clip.",
+      "range-starts-after-end": "The range starts after the end of this file.",
+      "scale-needs-a-dimension": "Enter a width or a height.",
+      "multi-input-required": "This needs {needed} files and has {given}.",
+      "single-input-expected": "This tool takes one file at a time.",
+      "unsupported-operation": "Those settings can't be combined yet."
+    }
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "retention": "Files processed on our servers are deleted within 24 hours. Files processed on your device are never uploaded.",
+    "rights": "© {year} Editz"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "The core tools are free and always will be. Pro pays for the servers that do the heavy work.",
+    "freeName": "Free",
+    "freePrice": "0",
+    "proName": "Pro",
+    "features": {
+      "fileSize": "Files up to {size}",
+      "noWatermark": "No watermark",
+      "watermark": "Small watermark on exports",
+      "ai": "Subtitles and translation",
+      "noAi": "No AI tools",
+      "export4k": "4K export",
+      "projects": "Saved projects",
+      "queue": "Priority queue",
+      "standardQueue": "Standard queue",
+      "retention": "Results kept 24 hours"
+    },
+    "cta": "Coming with accounts"
+  },
+  "legal": {
+    "privacyTitle": "Privacy",
+    "termsTitle": "Terms"
+  },
+  "units": {
+    "seconds": "sec",
+    "megabytes": "MB"
+  }
+}

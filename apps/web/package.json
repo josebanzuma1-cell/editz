@@ -1,0 +1,36 @@
+{
+  "name": "@editz/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@editz/engine-client": "workspace:*",
+    "@editz/engine-core": "workspace:*",
+    "@editz/tool-registry": "workspace:*",
+    "@editz/ui": "workspace:*",
+    "lucide-react": "^0.545.0",
+    "next": "^16.2.12",
+    "next-intl": "^4.13.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@editz/config": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.17.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3"
+  }
+}

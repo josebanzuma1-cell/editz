@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The compiler's edge cases are only meaningful against a real binary —
+      # argv assertions cannot tell you that an audio filter on a silent file
+      # is a hard failure. Without this the integration suite skips itself.
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+      # Not a gate — prints which landing pages are still below the 150-word
+      # copy floor so the backlog is visible on every run.
+      - run: pnpm copy:audit
+        continue-on-error: true

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Editz Node package",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  }
+}
