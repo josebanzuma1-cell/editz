@@ -1,5 +1,4 @@
 import type { MediaInput } from '@editz/engine-core';
-import type { ClientRunner } from './runner';
 import { parseDuration } from './progress';
 
 /**
@@ -92,24 +91,7 @@ export function mergeProbe(base: MediaInput, probed: ProbeResult): MediaInput {
   };
 }
 
-/**
- * Runs the null-output probe. Never throws for a normal file — FFmpeg exits
- * non-zero because no output was given, which is expected and not an error.
- */
-export async function probeWithFfmpeg(
-  runner: ClientRunner,
-  file: File,
-  fsName: string,
-): Promise<ProbeResult> {
-  const lines: string[] = [];
-  try {
-    await runner.run(
-      { passes: [['-hide_banner', '-i', fsName]], outputName: fsName, auxFiles: [],
-        reencode: false, notes: [], needsFullBuffer: false },
-      { files: [file], fsNames: [fsName], onLog: (line) => lines.push(line) },
-    );
-  } catch {
-    // Expected: "At least one output file must be specified".
-  }
-  return parseProbeOutput(lines);
+/** True when the probe learned something the DOM could not. */
+export function probeAddsCodecInfo(probed: ProbeResult): boolean {
+  return probed.videoCodec !== undefined || probed.audioCodec !== undefined;
 }

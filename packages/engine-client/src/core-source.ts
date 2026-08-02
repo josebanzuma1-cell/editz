@@ -28,6 +28,16 @@ export interface CoreSource {
   coreURL: string;
   wasmURL: string;
   workerURL: string;
+  /**
+   * @ffmpeg/ffmpeg's *own* worker — not the core's.
+   *
+   * A real same-origin path rather than a blob URL, because this one is an
+   * ES module that imports `./const.js` and `./errors.js` relative to itself.
+   * From a blob URL those relative specifiers have nothing to resolve against
+   * and the worker never boots. The core assets below are different: they are
+   * classic scripts, so blob URLs are fine and let them be served from cache.
+   */
+  classWorkerURL: string;
 }
 
 /** Served from `public/ffmpeg/`, populated by `scripts/copy-ffmpeg-core.mjs`. */
@@ -112,7 +122,22 @@ export async function resolveCore(
     loadAsset(`${base}/ffmpeg-core.worker.js`, 'text/javascript', report),
   ]);
 
-  return { coreURL, wasmURL, workerURL };
+  return { coreURL, wasmURL, workerURL, classWorkerURL: absoluteUrl(`${base}/lib/worker.js`) };
+}
+
+/**
+ * Absolute, not root-relative.
+ *
+ * @ffmpeg/ffmpeg does `new Worker(new URL(classWorkerURL, import.meta.url))`,
+ * and under Turbopack `import.meta.url` for a bundled chunk is a `file://`
+ * URL. A path like `/ffmpeg/lib/worker.js` resolves against that into
+ * `file:///ffmpeg/lib/worker.js`, and the browser refuses it with a
+ * SecurityError that names a scheme nobody asked for. An absolute URL ignores
+ * the base entirely.
+ */
+function absoluteUrl(path: string): string {
+  if (typeof location === 'undefined') return path;
+  return new URL(path, location.href).href;
 }
 
 /** True when the core is already local, so the UI can say "ready" rather than
@@ -129,5 +154,8 @@ export async function isCoreCached(base: string = DEFAULT_BASE): Promise<boolean
 }
 
 export function releaseCore(source: CoreSource): void {
-  for (const url of Object.values(source)) URL.revokeObjectURL(url);
+  // classWorkerURL is a real path, not a blob — revoking it is meaningless.
+  for (const url of [source.coreURL, source.wasmURL, source.workerURL]) {
+    URL.revokeObjectURL(url);
+  }
 }

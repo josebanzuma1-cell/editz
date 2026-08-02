@@ -49,6 +49,15 @@ export interface CompiledJob {
   notes: CompileNote[];
   /** True if the job must hold the whole file in memory. Blocks client mode. */
   needsFullBuffer: boolean;
+  /**
+   * How long the result will be, when that is knowable.
+   *
+   * FFmpeg reports progress as an output timestamp, so this is the denominator
+   * for the percentage. Using the *input* duration instead makes every trim
+   * finish at 40% and every 2x speed-up finish at 50% — the bar is wrong in
+   * exactly the cases where the user is watching it.
+   */
+  outputDurationSec?: number;
   /** Work FFmpeg cannot do, for the runner to apply afterwards. */
   postProcess?: { setDpi?: number };
 }
@@ -291,6 +300,7 @@ export function compile(
   let dropVideo = false;
   let needsFullBuffer = false;
   let speedFactor = 1;
+  let loopCount = 1;
   let seekStart: number | null = null;
   let durationSec: number | null = null;
   let dpi: number | null = null;
@@ -321,7 +331,10 @@ export function compile(
             break;
           case 'loop':
             // -stream_loop counts *additional* passes, so N plays is N-1.
-            if (op.count > 1) preInput.push('-stream_loop', String(op.count - 1));
+            if (op.count > 1) {
+              preInput.push('-stream_loop', String(op.count - 1));
+              loopCount = op.count;
+            }
             break;
           case 'framerateIn':
             preInput.push('-framerate', num(op.fps));
@@ -862,6 +875,13 @@ export function compile(
   }
   args.push(outputName);
 
+  const sourceLength =
+    durationSec ?? (primary.durationSec !== undefined
+      ? primary.durationSec - (seekStart ?? 0)
+      : undefined);
+  const outputDurationSec =
+    sourceLength !== undefined ? (sourceLength / speedFactor) * loopCount : undefined;
+
   return {
     passes: [args],
     outputName,
@@ -869,6 +889,7 @@ export function compile(
     reencode,
     notes,
     needsFullBuffer,
+    ...(outputDurationSec !== undefined ? { outputDurationSec } : {}),
     ...(dpi !== null ? { postProcess: { setDpi: dpi } } : {}),
   };
 }

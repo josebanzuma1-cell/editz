@@ -47,10 +47,32 @@
     "faqTitle": "Questions",
     "relatedTitle": "Related tools",
     "openApp": "Open {name}",
-    "notYetAvailable": "Processing arrives in the next release",
-    "notYetAvailableBody": "The tool pages, settings and the data meter are live. The engine that does the work lands next.",
+    "notYetAvailable": "Server processing arrives in the next release",
+    "notYetAvailableBody": "This job is too large for your browser, so it needs our servers — and those are not switched on yet. Smaller files run here and now.",
     "retention": "Nothing is kept longer than 24 hours, and files processed on your device are never uploaded at all.",
-    "wrongType": "That file type is not supported here. This tool takes {types}."
+    "wrongType": "That file type is not supported here. This tool takes {types}.",
+    "cancel": "Cancel",
+    "runAgain": "Start again",
+    "download": "Download {name}",
+    "done": "Done",
+    "doneBody": "Your file is ready. It was made on your device and has not been sent anywhere.",
+    "stage": {
+      "loading-core": "Getting the engine ready",
+      "reading-file": "Reading your file",
+      "inspecting": "Checking what is in it",
+      "running": "Working",
+      "finishing": "Finishing up"
+    },
+    "coreDownload": "First run on this device: downloading the {size} engine. It is cached afterwards, so this happens once.",
+    "coreCached": "Engine ready — already on this device.",
+    "failure": {
+      "out-of-memory": "This file needs more memory than your browser will give a tab. Try a smaller file, a shorter clip, or a lower resolution.",
+      "unsupported-codec": "The browser engine cannot read this particular codec. Converting the file to MP4 first usually fixes it.",
+      "corrupt-input": "This file looks damaged or incomplete. If it was still uploading or copying when you picked it, try again.",
+      "no-space": "There was not enough room to write the result. Close some tabs and try again.",
+      "cancelled": "Cancelled. Nothing was changed.",
+      "unknown": "That did not work, and we are not sure why. If it happens again with the same file, it is worth telling us."
+    }
   },
   "meter": {
     "title": "Data meter",

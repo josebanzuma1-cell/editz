@@ -22,6 +22,24 @@ const config: NextConfig = {
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
         ],
       },
+      {
+        // The wasm engine, served from public/.
+        //
+        // A dedicated worker spawned by a cross-origin-isolated document has
+        // to carry the isolation headers on its own response — inheriting
+        // them from the page is not enough, and the failure is a bare
+        // `onerror` with no message. The proxy cannot do this: its matcher
+        // deliberately skips anything with a file extension so it never runs
+        // on static assets.
+        source: '/ffmpeg/:path*',
+        headers: [
+          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+          // The core is content-addressed by package version and never
+          // mutates in place, so it can be cached hard.
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
     ];
   },
 };

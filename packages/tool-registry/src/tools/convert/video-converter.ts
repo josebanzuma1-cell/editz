@@ -48,10 +48,16 @@ export const videoConverter = defineTool({
   multiFile: false,
 
   execution: 'auto',
-  requiresServer: (input, p) => {
-    // VP9 in wasm is very slow. Past a few tens of megabytes it stops being a
-    // reasonable thing to ask of someone's phone.
-    if (p.format === 'webm' && input.bytes > 50 * 1024 * 1024) return 'params-need-server';
+  requiresServer: (_input, p) => {
+    // WebM always goes to the server, at any size.
+    //
+    // Not a performance judgement: libvpx-vp9 in @ffmpeg/core-mt 0.12.10
+    // crashes partway through the encode — reproducibly, on a three-second
+    // 320x240 clip, at the same frame every time. Every other container in
+    // this tool completes in the browser. Until the core is fixed or replaced,
+    // offering WebM locally means offering a button that does not work, and
+    // the meter tells the user the upload cost before they commit.
+    if (p.format === 'webm') return 'params-need-server';
     return null;
   },
 
@@ -161,7 +167,7 @@ export const videoConverter = defineTool({
       },
       {
         q: 'Is anything uploaded?',
-        a: 'No for most files — conversion runs in your browser. WebM conversion of anything over about 50 MB is sent to our servers because VP9 encoding in the browser is too slow to be reasonable, and the meter tells you that, in megabytes, before you start.',
+        a: 'Not for MP4, MOV, MKV or AVI — those convert in your browser and nothing leaves your device. WebM is the exception: the browser engine cannot encode VP9 reliably, so those go to our servers. The meter tells you which is happening, in megabytes, before you start.',
       },
     ],
     related: ['compress-video', 'audio-converter', 'extract-audio', 'gif-maker'],

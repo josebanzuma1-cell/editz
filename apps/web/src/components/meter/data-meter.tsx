@@ -50,6 +50,8 @@ export function DataMeter({
   notes = [],
   reencode = null,
   problem = null,
+  progress = null,
+  coreLoad = null,
 }: {
   input: MediaInput | null;
   decision: ExecutionDecision | null;
@@ -57,6 +59,8 @@ export function DataMeter({
   notes?: readonly CompileNote[];
   reencode?: boolean | null;
   problem?: { code: string; detail?: Record<string, string | number> } | null;
+  progress?: { fraction: number; stage: string } | null;
+  coreLoad?: { fromCache: boolean } | null;
 }) {
   const onDevice = decision?.mode === 'client';
   const uploadBytes = decision?.uploadBytes ?? 0;
@@ -94,12 +98,35 @@ export function DataMeter({
         </span>
       </div>
 
-      {/* The bar. Full and quiet when nothing leaves the device; filled with a
-          warning colour in proportion to what does. */}
-      <div className="h-1 w-full bg-hairline">
+      {/* One bar, two jobs. Before a run it shows where the bytes are going —
+          quiet when nothing leaves the device. During a run it becomes the
+          progress bar, because that is the only number anyone is looking at. */}
+      <div
+        className="h-1 w-full bg-hairline"
+        {...(progress
+          ? {
+              role: 'progressbar',
+              'aria-valuenow': Math.round(progress.fraction * 100),
+              'aria-valuemin': 0,
+              'aria-valuemax': 100,
+            }
+          : {})}
+      >
         <div
-          className={onDevice ? 'h-full w-full bg-signal/40' : 'h-full w-full bg-warn'}
-          style={decision === null ? { width: 0 } : undefined}
+          className={
+            progress
+              ? 'h-full bg-signal transition-[width] duration-(--duration-state)'
+              : onDevice
+                ? 'h-full w-full bg-signal/40'
+                : 'h-full w-full bg-warn'
+          }
+          style={
+            progress
+              ? { width: `${Math.round(progress.fraction * 100)}%` }
+              : decision === null
+                ? { width: 0 }
+                : undefined
+          }
         />
       </div>
 
@@ -132,8 +159,18 @@ export function DataMeter({
       </div>
 
       <p className="border-t border-hairline px-5 py-4 text-sm leading-relaxed text-text-on-ink-muted">
-        {decision === null ? t('meter.noFile') : tDynamic(`meter.reason.${decision.reason}`)}
+        {progress
+          ? tDynamic(`tool.stage.${progress.stage}`)
+          : decision === null
+            ? t('meter.noFile')
+            : tDynamic(`meter.reason.${decision.reason}`)}
       </p>
+
+      {coreLoad?.fromCache === true && progress?.stage === 'loading-core' ? (
+        <p className="border-t border-hairline px-5 py-3 text-xs text-text-on-ink-faint">
+          {t('tool.coreCached')}
+        </p>
+      ) : null}
 
       {problem ? (
         <p

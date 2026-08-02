@@ -13,12 +13,23 @@
  * absent core turns into a 404 at the moment a user picks a file.
  */
 import { createRequire } from 'node:module';
-import { copyFile, mkdir, stat } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const ASSETS = ['ffmpeg-core.js', 'ffmpeg-core.wasm', 'ffmpeg-core.worker.js'];
 const target = join(process.cwd(), 'public', 'ffmpeg');
+/**
+ * @ffmpeg/ffmpeg's own worker also has to be served by us.
+ *
+ * Left to itself the library does `new Worker(new URL('./worker.js',
+ * import.meta.url))`, which a bundler cannot resolve to anything real — and
+ * because `load()` then waits for a message from a worker that never booted,
+ * the failure is an infinite spinner with no error anywhere. Passing
+ * `classWorkerURL` avoids it, but the worker imports `./const.js` and
+ * `./errors.js`, so the whole ESM directory has to travel with it.
+ */
+const libTarget = join(target, 'lib');
 
 async function exists(path) {
   try {
@@ -79,7 +90,35 @@ async function main() {
     copied++;
   }
 
-  if (copied > 0) console.log(`  ffmpeg core: copied ${copied} file(s) into public/ffmpeg/`);
+  copied += await copyLibrary();
+
+  if (copied > 0) console.log(`  ffmpeg: copied ${copied} file(s) into public/ffmpeg/`);
+}
+
+async function copyLibrary() {
+  let libDir;
+  try {
+    libDir = join(await packageRoot('@ffmpeg/ffmpeg'), 'dist', 'esm');
+  } catch {
+    console.error('  @ffmpeg/ffmpeg is not installed.');
+    process.exit(1);
+  }
+
+  await mkdir(libTarget, { recursive: true });
+  let copied = 0;
+
+  for (const entry of await readdir(libDir)) {
+    if (!entry.endsWith('.js')) continue;
+    const from = join(libDir, entry);
+    const to = join(libTarget, entry);
+    const src = await stat(from);
+    const dst = (await exists(to)) ? await stat(to) : null;
+    if (dst && dst.size === src.size) continue;
+    await copyFile(from, to);
+    copied++;
+  }
+
+  return copied;
 }
 
 await main();

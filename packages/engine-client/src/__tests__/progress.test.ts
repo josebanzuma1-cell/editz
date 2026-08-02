@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ProgressTracker, parseDuration, parseProgressTime } from '../progress';
 import { parseProbeOutput } from '../probe';
+import { classifyFailure } from '../failures';
 
 const STATUS =
   'frame=  120 fps= 30 q=28.0 size=     512kB time=00:00:04.03 bitrate= 1040.2kbits/s speed=1.2x';
@@ -97,5 +98,32 @@ describe('parsing the stream table', () => {
 
   it('says nothing rather than guessing when the output is empty', () => {
     expect(parseProbeOutput([])).toEqual({ hasVideo: false, hasAudio: false });
+  });
+});
+
+describe('classifying failures', () => {
+  // FFmpeg's stderr is not a user-facing message (§7). These are the four
+  // things that actually go wrong in a browser.
+  it('recognises the wasm heap running out, which is the common one', () => {
+    expect(classifyFailure(['Aborted(). Build with -sASSERTIONS', 'Cannot enlarge memory arrays'])).toBe(
+      'out-of-memory',
+    );
+  });
+
+  it('recognises a codec the build does not have', () => {
+    expect(classifyFailure(['Decoder (codec hevc) not found for input stream #0:0'])).toBe(
+      'unsupported-codec',
+    );
+  });
+
+  it('recognises a broken file', () => {
+    expect(classifyFailure(['[mov,mp4] moov atom not found'])).toBe('corrupt-input');
+  });
+
+  it('admits when it does not know rather than guessing', () => {
+    // A wrong explanation is worse than an honest one, because the user acts
+    // on it.
+    expect(classifyFailure(['Something nobody has seen before'])).toBe('unknown');
+    expect(classifyFailure([])).toBe('unknown');
   });
 });
