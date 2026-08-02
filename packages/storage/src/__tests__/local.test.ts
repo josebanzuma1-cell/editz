@@ -125,11 +125,18 @@ describe('objects', () => {
   });
 
   it('moves files to and from local scratch, which is what the worker does', async () => {
-    const scratch = join(root, 'scratch', 'out.mp4');
-    await writeFile(join(root, 'source.mp4'), Buffer.from('encoded'));
-    await storage.uploadFrom('jobs/1/out/o.mp4', join(root, 'source.mp4'), 'video/mp4');
-    await storage.downloadTo('jobs/1/out/o.mp4', scratch);
+    // Its own directory: a shared scratch path is a race waiting for the day
+    // the suite runs alongside five others.
+    const dir = mkdtempSync(join(tmpdir(), 'editz-scratch-'));
+    const source = join(dir, 'source.mp4');
+    const scratch = join(dir, 'out.mp4');
+
+    await writeFile(source, Buffer.from('encoded'));
+    await storage.uploadFrom('jobs/round-trip/out/o.mp4', source, 'video/mp4');
+    await storage.downloadTo('jobs/round-trip/out/o.mp4', scratch);
+
     expect(await readFile(scratch, 'utf8')).toBe('encoded');
+    rmSync(dir, { recursive: true, force: true });
   });
 
   it('deletes on request, so "delete now" does not mean "wait a day"', async () => {

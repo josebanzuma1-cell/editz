@@ -85,6 +85,15 @@ export const jobs = pgTable(
     finishedAt: timestamp('finished_at', { withTimezone: true }),
     /** Null for client jobs: there is no artefact of ours to expire. */
     expiresAt: timestamp('expires_at', { withTimezone: true }),
+    /**
+     * When the objects were removed — by the sweeper, or by someone pressing
+     * "delete now".
+     *
+     * Its existence is what lets a server job have no input key without
+     * pretending it was a client job. Rewriting `executionMode` to satisfy a
+     * constraint would corrupt the very analytics this row exists for.
+     */
+    filesDeletedAt: timestamp('files_deleted_at', { withTimezone: true }),
   },
   (table) => [
     index('jobs_status_idx').on(table.status),
@@ -94,7 +103,8 @@ export const jobs = pgTable(
     // writes the next insert.
     check(
       'jobs_client_has_no_input_key',
-      sql`(${table.executionMode} = 'server' AND ${table.inputKey} IS NOT NULL)
+      sql`(${table.executionMode} = 'server'
+             AND (${table.inputKey} IS NOT NULL OR ${table.filesDeletedAt} IS NOT NULL))
           OR (${table.executionMode} = 'client' AND ${table.inputKey} IS NULL)`,
     ),
     check('jobs_progress_range', sql`${table.progress} >= 0 AND ${table.progress} <= 1`),

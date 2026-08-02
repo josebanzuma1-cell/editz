@@ -10,7 +10,22 @@ const job = (id: string): QueuedJob => ({
   inputBytes: 1024,
 });
 
-const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
+/**
+ * Waits for a condition instead of for a duration.
+ *
+ * Sleeping "long enough" is how a suite becomes flaky: it passes on an idle
+ * laptop and fails when CI runs six packages at once, and a test that fails
+ * randomly gets ignored — at which point it protects nothing. Polling a
+ * predicate is deterministic under any amount of load; only the timeout is
+ * time-based, and that fires only on genuine failure.
+ */
+async function waitFor(condition: () => boolean, timeoutMs = 5000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!condition()) {
+    if (Date.now() > deadline) throw new Error('waitFor: condition never became true');
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+}
 
 let queue: MemoryQueue;
 afterEach(async () => {
@@ -27,7 +42,7 @@ describe('MemoryQueue', () => {
 
     await queue.enqueue(job('a'));
     await queue.enqueue(job('b'));
-    await settle();
+    await waitFor(() => seen.length === 2);
 
     expect(seen).toEqual(['a', 'b']);
   });
@@ -43,7 +58,7 @@ describe('MemoryQueue', () => {
     queue.consume(async (j) => {
       seen.push(j.jobId);
     });
-    await settle();
+    await waitFor(() => seen.length === 3);
 
     expect(seen[0]).toBe('pro');
   });
@@ -52,6 +67,7 @@ describe('MemoryQueue', () => {
     queue = new MemoryQueue();
     let running = 0;
     let peak = 0;
+    let done = 0;
 
     queue.consume(
       async () => {
@@ -59,14 +75,17 @@ describe('MemoryQueue', () => {
         peak = Math.max(peak, running);
         await new Promise((r) => setTimeout(r, 20));
         running--;
+        done++;
       },
       { concurrency: 2 },
     );
 
     for (const id of ['a', 'b', 'c', 'd']) await queue.enqueue(job(id));
-    await new Promise((r) => setTimeout(r, 150));
+    // Wait for the work to finish, then assert — so exceeding the limit is a
+    // clear assertion failure rather than a timeout with nothing to read.
+    await waitFor(() => done === 4, 10_000);
 
-    expect(peak).toBeLessThanOrEqual(2);
+    expect(peak).toBe(2);
   });
 
   it('retries a failure and reports the attempt number', async () => {
@@ -79,7 +98,7 @@ describe('MemoryQueue', () => {
     });
 
     await queue.enqueue(job('flaky'));
-    await new Promise((r) => setTimeout(r, 200));
+    await waitFor(() => attempts.length === 3);
 
     expect(attempts).toEqual([1, 2, 3]);
     expect(queue.dead).toHaveLength(0);
@@ -94,14 +113,15 @@ describe('MemoryQueue', () => {
     });
 
     await queue.enqueue(job('doomed'), { attempts: 2 });
-    await new Promise((r) => setTimeout(r, 200));
+    await waitFor(() => queue.dead.length === 1);
 
     expect(queue.dead).toHaveLength(1);
     expect(queue.dead[0]?.job.jobId).toBe('doomed');
   });
 
   it('backs off between attempts instead of hammering', async () => {
-    queue = new MemoryQueue({ backoffMs: 40 });
+    const backoffMs = 60;
+    queue = new MemoryQueue({ backoffMs });
     const times: number[] = [];
     queue.consume(async () => {
       times.push(Date.now());
@@ -109,10 +129,14 @@ describe('MemoryQueue', () => {
     });
 
     await queue.enqueue(job('slow-retry'), { attempts: 3 });
-    await new Promise((r) => setTimeout(r, 400));
+    await waitFor(() => times.length === 3);
 
-    expect(times.length).toBeGreaterThanOrEqual(2);
-    expect(times[1]! - times[0]!).toBeGreaterThanOrEqual(30);
+    // Only a lower bound is asserted. Under load the gap can be arbitrarily
+    // *longer*, and a test that also caps it would fail for the one reason
+    // that is not a bug.
+    expect(times[1]! - times[0]!).toBeGreaterThanOrEqual(backoffMs * 0.8);
+    // Exponential, so the second wait is longer than the first.
+    expect(times[2]! - times[1]!).toBeGreaterThan(times[1]! - times[0]!);
   });
 
   it('stops accepting work once closed', async () => {
@@ -129,9 +153,10 @@ describe('MemoryQueue', () => {
     queue.consume(handler);
 
     await queue.enqueue(job('cancelled'));
-    await settle();
+    await waitFor(() => handler.mock.calls.length === 1);
     await queue.close();
-    await new Promise((r) => setTimeout(r, 150));
+    // Long enough that a scheduled retry would certainly have fired.
+    await new Promise((r) => setTimeout(r, 300));
 
     expect(handler).toHaveBeenCalledTimes(1);
   });

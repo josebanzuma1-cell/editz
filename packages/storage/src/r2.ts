@@ -3,6 +3,7 @@ import { mkdir, stat } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
+import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web';
 import { AwsClient } from 'aws4fetch';
 import type {
   ObjectHead,
@@ -113,19 +114,31 @@ export class R2Storage implements Storage {
       throw new Error(`r2: GET ${key} responded ${response.status}`);
     }
     await mkdir(dirname(path), { recursive: true });
-    // Streamed: the worker handles files far larger than its heap.
-    await pipeline(Readable.fromWeb(response.body), createWriteStream(path));
+    // Streamed: the worker handles files far larger than its heap. The cast is
+    // the DOM's `ReadableStream` meeting Node's — the same object, two
+    // structurally different declarations, in a repo that loads both libs.
+    await pipeline(
+      Readable.fromWeb(response.body as unknown as NodeWebReadableStream<Uint8Array>),
+      createWriteStream(path),
+    );
   }
 
   async uploadFrom(key: string, path: string, contentType: string): Promise<void> {
     const info = await stat(path);
     const response = await this.client.fetch(this.objectUrl(key), {
       method: 'PUT',
-      body: Readable.toWeb(createReadStream(path)) as ReadableStream,
+      // Streamed, so the worker uploads files far larger than its heap.
+      //
+      // A Node read stream rather than `Readable.toWeb`: undici accepts any
+      // async iterable as a body, and going through the web-stream conversion
+      // means Node's `ReadableStream` meeting the DOM's in a codebase that
+      // has both libs loaded, which does not typecheck even though the two
+      // describe the same object.
+      body: createReadStream(path),
       headers: { 'content-type': contentType, 'content-length': String(info.size) },
-      // Required by undici when the body is a stream.
+      // undici requires this whenever the body is a stream.
       duplex: 'half',
-    } as RequestInit);
+    } as unknown as RequestInit);
     if (!response.ok) throw new Error(`r2: PUT ${key} responded ${response.status}`);
   }
 

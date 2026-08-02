@@ -13,8 +13,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@editz/db": "workspace:*",
     "@editz/engine-client": "workspace:*",
     "@editz/engine-core": "workspace:*",
+    "@editz/engine-server": "workspace:*",
+    "@editz/queue": "workspace:*",
+    "@editz/storage": "workspace:*",
     "@editz/tool-registry": "workspace:*",
     "@editz/ui": "workspace:*",
     "lucide-react": "^0.545.0",

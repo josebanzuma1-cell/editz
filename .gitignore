@@ -30,3 +30,4 @@ scratch/
 apps/web/public/ffmpeg/
 next.config.compiled.js
 *.tsbuildinfo
+.editz-dev/
