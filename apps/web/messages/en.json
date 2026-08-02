@@ -20,7 +20,7 @@
   "tools": {
     "indexTitle": "All tools",
     "indexDescription": "Every Editz tool. Most run entirely in your browser.",
-    "count": "{count, plural, one {# tool} other {# tools}}",
+    "count": "{count} tools",
     "runsLocally": "On your device",
     "runsOnServer": "On our servers",
     "pro": "Pro"

@@ -1,7 +1,6 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import {
   CompileError,
   compile,
@@ -19,6 +18,7 @@ import { DataMeter } from '@/components/meter/data-meter';
 import { DropZone } from '@/components/tool/drop-zone';
 import { ParamPanel } from '@/components/tool/param-panel';
 import { formatAcceptedTypes } from '@/lib/format';
+import { t } from '@/lib/copy';
 import { probe } from '@/lib/probe';
 import { loadTool } from '@/lib/tool-loader';
 import { WASM_CEILING_BYTES } from '@/lib/site';
@@ -53,12 +53,12 @@ function toCompileInputs(files: File[], probed: MediaInput | null): CompileInput
  * Only plain values cross the server boundary — the manifest itself is imported
  * here, in the browser, by `loadTool`. See `tool-loader.ts` for why.
  *
- * In M1 nothing is processed. What is real is everything up to that point: the
- * file is read locally, probed for duration and dimensions, and
- * `decideExecution` runs for real against this actual file on this actual
- * device. The meter reports the true answer. That is deliberate — the meter is
+ * Nothing is processed yet. What is real is everything up to that point: the
+ * file is read locally, probed for duration and dimensions, `decideExecution`
+ * runs against this actual file on this actual device, and `compile` produces
+ * the command that would run. The meter reports all of it truthfully — it is
  * the product's central claim, and a mocked one would be worth nothing. The
- * action button is the only thing waiting on M2.
+ * action button is the only thing waiting on the runner.
  */
 export function ToolWorkspace({
   slug,
@@ -73,7 +73,6 @@ export function ToolWorkspace({
   accepts: string[];
   multiFile: boolean;
 }) {
-  const t = useTranslations('tool');
   const [tool, setTool] = useState<AnyToolManifest | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [input, setInput] = useState<MediaInput | null>(null);
@@ -187,20 +186,20 @@ export function ToolWorkspace({
             {files.map((file) => file.name).join(', ')}
           </p>
           <Button type="button" variant="ghost" onClick={() => setFiles([])}>
-            {t('changeFile')}
+            {t('tool.changeFile')}
           </Button>
         </div>
       )}
 
       {typeError ? (
         <p role="alert" className="text-sm text-bad">
-          {t('wrongType', { types: formatAcceptedTypes(accepts) })}
+          {t('tool.wrongType', { types: formatAcceptedTypes(accepts) })}
         </p>
       ) : null}
 
       {tool && params && tool.ui.controls.length > 0 ? (
         <section className="space-y-5 border-t border-hairline pt-6">
-          <h2 className="label-instrument text-text-on-ink-faint">{t('settings')}</h2>
+          <h2 className="label-instrument text-text-on-ink-faint">{t('tool.settings')}</h2>
           <ParamPanel
             tool={tool}
             params={params}
@@ -216,14 +215,14 @@ export function ToolWorkspace({
           variant="primary"
           size="lg"
           disabled
-          title={t('notYetAvailable')}
+          title={t('tool.notYetAvailable')}
           className="w-full sm:w-auto"
         >
           {name}
         </Button>
         <p className="text-sm text-text-on-ink-muted">
-          <span className="text-text-on-ink">{t('notYetAvailable')}.</span>{' '}
-          {t('notYetAvailableBody')}
+          <span className="text-text-on-ink">{t('tool.notYetAvailable')}.</span>{' '}
+          {t('tool.notYetAvailableBody')}
         </p>
         {validation && !validation.success && files.length > 0 ? (
           <p role="alert" className="text-sm text-bad">
@@ -231,10 +230,10 @@ export function ToolWorkspace({
                 so the issue list arrives untyped. */}
             {validation.error.issues
               .map((issue: { message: string }) => issue.message)
-              .join(' · ')}
+              .join(' Â· ')}
           </p>
         ) : null}
-        <p className="text-xs leading-relaxed text-text-on-ink-faint">{t('retention')}</p>
+        <p className="text-xs leading-relaxed text-text-on-ink-faint">{t('tool.retention')}</p>
       </div>
     </div>
   );

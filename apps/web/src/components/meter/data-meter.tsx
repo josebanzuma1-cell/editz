@@ -1,8 +1,8 @@
 'use client';
 
 import type { CompileNote, ExecutionDecision, MediaInput } from '@editz/engine-core';
-import { useLocale, useTranslations } from 'next-intl';
 import { formatBytes, formatDuration } from '@/lib/format';
+import { t, tDynamic } from '@/lib/copy';
 
 /**
  * Notes worth a user's attention. The rest — `encoder-options-dropped`,
@@ -58,16 +58,13 @@ export function DataMeter({
   reencode?: boolean | null;
   problem?: { code: string; detail?: Record<string, string | number> } | null;
 }) {
-  const t = useTranslations('meter');
-  const locale = useLocale();
-
   const onDevice = decision?.mode === 'client';
   const uploadBytes = decision?.uploadBytes ?? 0;
 
   return (
     <section
       data-surface="ink"
-      aria-label={t('title')}
+      aria-label={t('meter.title')}
       className="overflow-hidden rounded-lg border border-hairline"
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hairline px-5 py-4">
@@ -82,14 +79,18 @@ export function DataMeter({
           }
         />
         <span className="font-display text-lg font-semibold tracking-tight text-text-on-ink">
-          {decision === null ? t('title') : onDevice ? t('onDevice') : t('uploading')}
+          {decision === null
+            ? t('meter.title')
+            : onDevice
+              ? t('meter.onDevice')
+              : t('meter.uploading')}
         </span>
         <span className="ml-auto text-readout tabular-nums text-text-on-ink-muted">
           {decision === null
-            ? t('unknown')
+            ? t('meter.unknown')
             : uploadBytes === 0
-              ? t('uploadedNothing')
-              : t('willUpload', { size: formatBytes(uploadBytes, locale) })}
+              ? t('meter.uploadedNothing')
+              : t('meter.willUpload', { size: formatBytes(uploadBytes) })}
         </span>
       </div>
 
@@ -103,26 +104,35 @@ export function DataMeter({
       </div>
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-5 px-5 py-5 sm:grid-cols-4">
-        <Readout label={t('inputLabel')} value={input ? formatBytes(input.bytes, locale) : t('unknown')} />
         <Readout
-          label={t('outputLabel')}
-          value={estimatedOutput !== null ? `~ ${formatBytes(estimatedOutput, locale)}` : t('unknown')}
+          label={t('meter.inputLabel')}
+          value={input ? formatBytes(input.bytes) : t('meter.unknown')}
         />
         <Readout
-          label={t('uploadLabel')}
-          value={decision ? formatBytes(uploadBytes, locale) : t('unknown')}
+          label={t('meter.outputLabel')}
+          value={
+            estimatedOutput !== null ? `~ ${formatBytes(estimatedOutput)}` : t('meter.unknown')
+          }
+        />
+        <Readout
+          label={t('meter.uploadLabel')}
+          value={decision ? formatBytes(uploadBytes) : t('meter.unknown')}
           emphasis={decision !== null && uploadBytes === 0}
         />
         <Readout
-          label={t('workLabel')}
+          label={t('meter.workLabel')}
           value={
-            reencode === null ? t('unknown') : reencode ? t('work.reencode') : t('work.remux')
+            reencode === null
+              ? t('meter.unknown')
+              : reencode
+                ? t('meter.work.reencode')
+                : t('meter.work.remux')
           }
         />
       </div>
 
       <p className="border-t border-hairline px-5 py-4 text-sm leading-relaxed text-text-on-ink-muted">
-        {decision === null ? t('noFile') : t(`reason.${decision.reason}`)}
+        {decision === null ? t('meter.noFile') : tDynamic(`meter.reason.${decision.reason}`)}
       </p>
 
       {problem ? (
@@ -130,7 +140,7 @@ export function DataMeter({
           role="alert"
           className="border-t border-hairline px-5 py-4 text-sm leading-relaxed text-bad"
         >
-          {t(`error.${problem.code}`, problem.detail)}
+          {tDynamic(`meter.error.${problem.code}`, problem.detail)}
         </p>
       ) : null}
 
@@ -142,7 +152,7 @@ export function DataMeter({
           className="flex gap-3 border-t border-hairline px-5 py-3 text-sm leading-relaxed text-text-on-ink-muted"
         >
           <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-warn" />
-          <span>{t(`note.${note.code}`, noteValues(note))}</span>
+          <span>{tDynamic(`meter.note.${note.code}`, noteValues(note))}</span>
         </p>
       ))}
 

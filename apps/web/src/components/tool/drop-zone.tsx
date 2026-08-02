@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useId, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { Button, cn } from '@editz/ui';
+import { t } from '@/lib/copy';
 
 export function DropZone({
   accept,
@@ -13,7 +13,6 @@ export function DropZone({
   multiple: boolean;
   onFiles: (files: File[]) => void;
 }) {
-  const t = useTranslations('tool');
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -45,10 +44,10 @@ export function DropZone({
       )}
     >
       <p className="font-display text-xl font-semibold tracking-tight text-text-on-ink">
-        {multiple ? t('dropPromptMulti') : t('dropPrompt')}
+        {multiple ? t('tool.dropPromptMulti') : t('tool.dropPrompt')}
       </p>
       <p className="text-sm text-text-on-ink-muted">
-        {multiple ? t('orChooseMulti') : t('orChoose')}
+        {multiple ? t('tool.orChooseMulti') : t('tool.orChoose')}
       </p>
 
       <input
@@ -61,7 +60,7 @@ export function DropZone({
         onChange={(e) => handle(e.target.files)}
       />
       <Button type="button" variant="primary" size="lg" onClick={() => inputRef.current?.click()}>
-        {multiple ? t('chooseFiles') : t('chooseFile')}
+        {multiple ? t('tool.chooseFiles') : t('tool.chooseFile')}
       </Button>
     </div>
   );

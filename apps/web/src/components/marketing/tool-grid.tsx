@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import type { AnyToolManifest } from '@editz/tool-registry';
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { t } from '@/lib/copy';
 
 /**
  * The tool grid. Plain, dense and fast, per §10 — no cards that lift, no
@@ -19,7 +19,6 @@ export function ToolGrid({ tools }: { tools: readonly AnyToolManifest[] }) {
 }
 
 function ToolCard({ tool }: { tool: AnyToolManifest }) {
-  const t = useTranslations('tools');
   const runsLocally = tool.execution === 'client';
   const runsOnServer = tool.execution === 'server' || tool.serverOnly === true;
 
@@ -36,9 +35,9 @@ function ToolCard({ tool }: { tool: AnyToolManifest }) {
           {tool.seo.description}
         </span>
         <span className="mt-auto flex items-center gap-2 pt-2">
-          {runsLocally ? <Tag>{t('runsLocally')}</Tag> : null}
-          {runsOnServer ? <Tag>{t('runsOnServer')}</Tag> : null}
-          {tool.category === 'ai' ? <Tag accent>{t('pro')}</Tag> : null}
+          {runsLocally ? <Tag>{t('tools.runsLocally')}</Tag> : null}
+          {runsOnServer ? <Tag>{t('tools.runsOnServer')}</Tag> : null}
+          {tool.category === 'ai' ? <Tag accent>{t('tools.pro')}</Tag> : null}
         </span>
       </Link>
     </li>

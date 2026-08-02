@@ -1,13 +1,12 @@
 import { ImageResponse } from 'next/og';
 import { TOOLS, getTool } from '@editz/tool-registry';
-import { routing } from '@/i18n/routing';
 
 export const alt = 'Editz';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export function generateStaticParams() {
-  return routing.locales.flatMap((locale) => TOOLS.map((tool) => ({ locale, slug: tool.slug })));
+  return TOOLS.map((tool) => ({ slug: tool.slug }));
 }
 
 /**

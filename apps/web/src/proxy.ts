@@ -1,36 +1,24 @@
-import createMiddleware from 'next-intl/middleware';
-import type { NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 // Slugs only — importing the full registry here would drag Zod, every
 // `buildOps` and all the SEO copy into the edge bundle, on every request.
 import { TOOL_SLUGS } from '@editz/tool-registry/slugs';
-import { routing } from './i18n/routing';
-
-const intlMiddleware = createMiddleware(routing);
 
 const SLUGS = new Set(TOOL_SLUGS);
 
-/** `/compress-video` and `/sw/compress-video` both name the same tool. */
-function slugFromPathname(pathname: string): string | null {
+function isToolRoute(pathname: string): boolean {
   const segments = pathname.split('/').filter(Boolean);
-  if (segments.length === 0) return null;
-
   const first = segments[0];
-  const candidate =
-    first !== undefined && (routing.locales as readonly string[]).includes(first)
-      ? segments[1]
-      : first;
-
-  return candidate !== undefined && SLUGS.has(candidate) ? candidate : null;
+  return segments.length === 1 && first !== undefined && SLUGS.has(first);
 }
 
-export default function middleware(request: NextRequest) {
-  const response = intlMiddleware(request);
+export default function proxy(request: NextRequest) {
+  const response = NextResponse.next();
 
   // Cross-origin isolation is what makes SharedArrayBuffer — and therefore
   // multi-threaded ffmpeg.wasm — available. It also breaks every third-party
   // embed on the page, so it goes on tool routes only and nowhere else (§11).
-  // Marketing pages, pricing and the legal pages stay embeddable.
-  if (slugFromPathname(request.nextUrl.pathname)) {
+  // Marketing, pricing and the legal pages stay embeddable.
+  if (isToolRoute(request.nextUrl.pathname)) {
     response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
     response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
     response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');

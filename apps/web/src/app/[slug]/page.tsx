@@ -1,67 +1,50 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { TOOLS, getTool, relatedTools } from '@editz/tool-registry';
-import { routing } from '@/i18n/routing';
-import { Link } from '@/i18n/navigation';
 import { SITE_URL } from '@/lib/site';
+import { t } from '@/lib/copy';
 import { ToolJsonLd } from '@/components/seo/json-ld';
 import { ToolWorkspace } from '@/components/tool/tool-workspace';
 
-type Props = { params: Promise<{ locale: string; slug: string }> };
+type Props = { params: Promise<{ slug: string }> };
 
-/** Every tool page, for every locale, generated from the registry. There is no
- *  hand-written route file for any tool and there never will be. */
+/** Every tool page, generated from the registry. There is no hand-written
+ *  route file for any tool and there never will be. */
 export function generateStaticParams() {
-  return routing.locales.flatMap((locale) =>
-    TOOLS.map((tool) => ({ locale, slug: tool.slug })),
-  );
+  return TOOLS.map((tool) => ({ slug: tool.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const tool = getTool(slug);
   if (!tool) return {};
-
-  const path = locale === routing.defaultLocale ? `/${slug}` : `/${locale}/${slug}`;
 
   return {
     title: tool.seo.title,
     description: tool.seo.description,
     ...(tool.seo.keywords ? { keywords: tool.seo.keywords } : {}),
-    alternates: {
-      canonical: path,
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [
-          l,
-          l === routing.defaultLocale ? `/${slug}` : `/${l}/${slug}`,
-        ]),
-      ),
-    },
+    alternates: { canonical: `/${slug}` },
     openGraph: {
       type: 'website',
       title: tool.seo.title,
       description: tool.seo.description,
-      url: `${SITE_URL}${path}`,
+      url: `${SITE_URL}/${slug}`,
     },
   };
 }
 
 export default async function ToolPage({ params }: Props) {
-  const { locale, slug } = await params;
-  setRequestLocale(locale);
-
+  const { slug } = await params;
   const tool = getTool(slug);
   if (!tool) notFound();
 
-  const t = await getTranslations('tool');
   const related = relatedTools(slug);
-  const url = `${SITE_URL}${locale === routing.defaultLocale ? `/${slug}` : `/${locale}/${slug}`}`;
   const isApp = tool.ui.surface === 'app';
 
   return (
     <>
-      <ToolJsonLd tool={tool} url={url} />
+      <ToolJsonLd tool={tool} url={`${SITE_URL}/${slug}`} />
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
         <header className="mb-8 space-y-3">
@@ -97,7 +80,9 @@ export default async function ToolPage({ params }: Props) {
         </section>
 
         <section className="mt-14">
-          <h2 className="text-display-m mb-6">{t('howTo', { name: tool.name.toLowerCase() })}</h2>
+          <h2 className="text-display-m mb-6">
+            {t('tool.howTo', { name: tool.name.toLowerCase() })}
+          </h2>
           <ol className="space-y-5">
             {tool.seo.steps.map((step, index) => (
               <li key={step} className="flex gap-4">
@@ -111,7 +96,7 @@ export default async function ToolPage({ params }: Props) {
         </section>
 
         <section className="mt-14">
-          <h2 className="text-display-m mb-6">{t('faqTitle')}</h2>
+          <h2 className="text-display-m mb-6">{t('tool.faqTitle')}</h2>
           <dl className="divide-y divide-black/10 border-y border-black/10">
             {tool.seo.faq.map((entry) => (
               <div key={entry.q} className="py-5">
@@ -124,7 +109,7 @@ export default async function ToolPage({ params }: Props) {
 
         {related.length > 0 ? (
           <section className="mt-14">
-            <h2 className="text-display-m mb-6">{t('relatedTitle')}</h2>
+            <h2 className="text-display-m mb-6">{t('tool.relatedTitle')}</h2>
             <ul className="flex flex-wrap gap-2">
               {related.map((other) => (
                 <li key={other.slug}>
@@ -149,10 +134,7 @@ export default async function ToolPage({ params }: Props) {
  *  parameter panel yet. */
 function AppNotice({ name }: { name: string }) {
   return (
-    <div
-      data-surface="ink"
-      className="rounded-xl border border-hairline px-6 py-10 text-center"
-    >
+    <div data-surface="ink" className="rounded-xl border border-hairline px-6 py-10 text-center">
       <p className="font-display text-xl font-semibold tracking-tight text-text-on-ink">{name}</p>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-text-on-ink-muted">
         This one is an application rather than a single-shot tool. It arrives in a later
