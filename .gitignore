@@ -29,3 +29,4 @@ scratch/
 # committing it would put a 31MB binary in every clone.
 apps/web/public/ffmpeg/
 next.config.compiled.js
+*.tsbuildinfo
