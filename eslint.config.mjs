@@ -18,4 +18,16 @@ export default [
     ],
   },
   ...base,
+  {
+    // Build scripts run in Node, not in a browser or a worker.
+    files: ['**/scripts/**/*.mjs', '**/*.config.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        Buffer: 'readonly',
+      },
+    },
+  },
 ];

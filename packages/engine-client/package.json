@@ -9,13 +9,17 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@editz/engine-core": "workspace:*"
+    "@editz/engine-core": "workspace:*",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/core-mt": "^0.12.10"
   },
   "devDependencies": {
     "@editz/config": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }
