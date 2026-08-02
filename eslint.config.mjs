@@ -15,6 +15,8 @@ export default [
       '**/.pnpm-store/**',
       '**/next-env.d.ts',
       'apps/web/next.config.compiled.js',
+      // Vendored ffmpeg.wasm core: minified emscripten glue, not our code.
+      'apps/web/public/**',
     ],
   },
   ...base,

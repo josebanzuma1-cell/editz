@@ -29,10 +29,29 @@ async function exists(path) {
   }
 }
 
+/**
+ * Finds a package's root directory.
+ *
+ * Not `require.resolve('<pkg>/package.json')` — @ffmpeg/core-mt declares an
+ * `exports` map with only `.`, `./wasm` and `./worker` in it, so asking for
+ * its package.json is a hard ERR_PACKAGE_PATH_NOT_EXPORTED. Resolve the entry
+ * point it does export, then walk up to the manifest.
+ */
+async function packageRoot(specifier) {
+  let dir = dirname(require.resolve(specifier));
+  for (let depth = 0; depth < 6; depth++) {
+    if (await exists(join(dir, 'package.json'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error(`could not locate the root of ${specifier}`);
+}
+
 async function main() {
   let sourceDir;
   try {
-    sourceDir = dirname(require.resolve('@ffmpeg/core-mt/package.json'));
+    sourceDir = await packageRoot('@ffmpeg/core-mt');
   } catch {
     console.error(
       '\n  @ffmpeg/core-mt is not installed, so public/ffmpeg/ cannot be populated.\n' +
@@ -53,7 +72,8 @@ async function main() {
     }
     // Cheap staleness check: size. The core is versioned by its package, so a
     // content hash would cost more than it is worth on every dev start.
-    const [src, dst] = await Promise.all([stat(from), exists(to) ? stat(to) : null]);
+    const src = await stat(from);
+    const dst = (await exists(to)) ? await stat(to) : null;
     if (dst && dst.size === src.size) continue;
     await copyFile(from, to);
     copied++;

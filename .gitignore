@@ -23,4 +23,9 @@ Thumbs.db
 
 # local scratch for media while developing
 scratch/
+
+# The ffmpeg.wasm core is ~31MB and comes from @ffmpeg/core-mt. It is copied
+# into place by apps/web/scripts/copy-ffmpeg-core.mjs on predev/prebuild —
+# committing it would put a 31MB binary in every clone.
+apps/web/public/ffmpeg/
 next.config.compiled.js

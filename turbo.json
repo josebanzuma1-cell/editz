@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_WASM_CEILING_BYTES"]
     },
     "dev": {
       "cache": false,
@@ -14,7 +15,11 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      // Turbo hides undeclared environment variables from tasks. Without
+      // these the FFmpeg integration suites silently skip themselves, and a
+      // green run stops meaning anything.
+      "passThroughEnv": ["FFMPEG_PATH", "FFPROBE_PATH"]
     },
     "copy:audit": {
       "cache": false
