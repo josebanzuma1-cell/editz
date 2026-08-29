@@ -3,7 +3,6 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
-  injectWorkspacePackages: true
 
 importers:
 
@@ -30,12 +29,24 @@ importers:
 
   apps/web:
     dependencies:
+      '@editz/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@editz/engine-client':
         specifier: workspace:*
         version: link:../../packages/engine-client
       '@editz/engine-core':
         specifier: workspace:*
         version: link:../../packages/engine-core
+      '@editz/engine-server':
+        specifier: workspace:*
+        version: link:../../packages/engine-server
+      '@editz/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@editz/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@editz/tool-registry':
         specifier: workspace:*
         version: link:../../packages/tool-registry
@@ -260,6 +271,43 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/worker-core:
+    dependencies:
+      '@editz/db':
+        specifier: workspace:*
+        version: link:../db
+      '@editz/engine-core':
+        specifier: workspace:*
+        version: link:../engine-core
+      '@editz/engine-server':
+        specifier: workspace:*
+        version: link:../engine-server
+      '@editz/queue':
+        specifier: workspace:*
+        version: link:../queue
+      '@editz/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@editz/tool-registry':
+        specifier: workspace:*
+        version: link:../tool-registry
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@electric-sql/pglite@0.3.16)(postgres@3.4.9)
+    devDependencies:
+      '@editz/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@8.2.0(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.4))
 
 packages:
 

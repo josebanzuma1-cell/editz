@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { eq } from 'drizzle-orm';
 import { PGlite } from '@electric-sql/pglite';
 import { drizzle } from 'drizzle-orm/pglite';
@@ -47,15 +48,15 @@ let queue: MemoryQueue;
 
 beforeAll(async () => {
   client = new PGlite();
-  const dir = new URL('../../../db/migrations/', import.meta.url);
+  // fileURLToPath, not `.pathname` — on Windows the pathname is `/C:/...` and
+  // stripping the leading slash happens to work, but on Linux it turns an
+  // absolute path into a relative one and every read fails. CI is Linux.
+  const dir = fileURLToPath(new URL('../../../db/migrations/', import.meta.url));
   const journal = JSON.parse(
-    await readFile(join(dir.pathname.replace(/^\//, ''), 'meta', '_journal.json'), 'utf8'),
+    await readFile(join(dir, 'meta', '_journal.json'), 'utf8'),
   ) as { entries: { tag: string }[] };
   for (const entry of journal.entries) {
-    const sqlText = await readFile(
-      join(dir.pathname.replace(/^\//, ''), `${entry.tag}.sql`),
-      'utf8',
-    );
+    const sqlText = await readFile(join(dir, `${entry.tag}.sql`), 'utf8');
     for (const statement of sqlText.split('--> statement-breakpoint')) {
       const trimmed = statement.trim();
       if (trimmed) await client.exec(trimmed);
