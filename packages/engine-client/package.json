@@ -1,0 +1,25 @@
+{
+  "name": "@editz/engine-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@editz/engine-core": "workspace:*",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/core-mt": "^0.12.10"
+  },
+  "devDependencies": {
+    "@editz/config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+@import '@editz/config/tailwind/theme.css';
+
+/* Tailwind v4 scans the importing project by default; the shared UI package
+   lives outside it and has to be named explicitly or its classes get purged. */
+@source '../../../../packages/ui/src';
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-paper);
+    color: var(--color-text-on-paper);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Marketing surfaces are light; the tool workspace and the editor are dark.
+     `data-surface="ink"` flips a subtree rather than the whole document. */
+  [data-surface='ink'] {
+    background-color: var(--color-ink);
+    color: var(--color-text-on-ink);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  /* Never remove the focus ring — only replace it. §10 quality floor. */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-signal);
+    color: var(--color-ink);
+  }
+}
+
+@layer components {
+  /* The instrument label. Parameter names are markings on equipment, not form
+     labels, and they are used often enough to earn a class. */
+  .label-instrument {
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+}
