@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@editz/config": "workspace:*",
+    "@electric-sql/pglite": "^0.3.11",
     "@types/node": "^22.10.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"

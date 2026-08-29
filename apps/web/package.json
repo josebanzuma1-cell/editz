@@ -21,10 +21,12 @@
     "@editz/storage": "workspace:*",
     "@editz/tool-registry": "workspace:*",
     "@editz/ui": "workspace:*",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.545.0",
     "next": "^16.2.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "server-only": "^0.0.1",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },

@@ -18,12 +18,12 @@
     "migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.3.11",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.5"
   },
   "devDependencies": {
     "@editz/config": "workspace:*",
-    "@electric-sql/pglite": "^0.3.11",
     "@types/node": "^22.10.0",
     "drizzle-kit": "^0.31.5",
     "typescript": "^5.9.3",
