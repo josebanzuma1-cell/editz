@@ -121,11 +121,17 @@ export function decideExecution(query: ExecutionQuery): ExecutionDecision {
 /** Reads the ambient browser context. The only impure part, kept separate so
  *  `decideExecution` stays testable without a DOM. */
 export function readBrowserContext(wasmCeilingBytes?: number): ExecutionContext {
-  // `deviceMemory` is Chromium-only and absent from lib.dom.d.ts, so there is
-  // no narrower type to assert through than `any`.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const asNav = (value: unknown) => value as any as { deviceMemory?: number };
-  const nav = typeof navigator === 'undefined' ? undefined : asNav(navigator);
+  // Reached for off globalThis rather than named directly.
+  //
+  // engine-core is runtime-agnostic — it compiles without the DOM lib so it
+  // can be shared with the Node worker — so `navigator` is not a name it can
+  // refer to. It resolved locally only because @types/node happened to be
+  // hoisted into scope, which meant any consumer without @types/node failed
+  // to typecheck while this package passed. Structural access has no such
+  // dependency. Same treatment as `crossOriginIsolated` below.
+  //
+  // `deviceMemory` is Chromium-only and absent from lib.dom.d.ts either way.
+  const nav = (globalThis as { navigator?: { deviceMemory?: number } }).navigator;
 
   // engine-core is shared with the Node worker, so it does not pull in the DOM
   // lib. `crossOriginIsolated` has to be reached for structurally.
